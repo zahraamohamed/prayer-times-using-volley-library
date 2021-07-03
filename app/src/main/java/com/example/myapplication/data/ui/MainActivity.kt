@@ -19,8 +19,9 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
     //make object from TaskDbHelper class
     private var requestQueue: RequestQueue? = null
+
+
     private  lateinit var binding:ActivityMainBinding
-    //private val client= OkHttpClient()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityMainBinding.inflate(layoutInflater)
@@ -32,7 +33,14 @@ class MainActivity : AppCompatActivity() {
         makeRequest("paris")
         searchCountry()
     }
-
+/*
+* volley has 3 json can get data from api using it
+* getJSONObject
+* getJSONArray
+* get string
+* if any object in api does not have name we reference to it (0)
+* the first {} object we do not need to reference to it
+ */
 
     private fun makeRequest(country: String) {
 
@@ -40,17 +48,19 @@ class MainActivity : AppCompatActivity() {
         val request = JsonObjectRequest(Request.Method.GET,
             url, null ,{ response ->
             try {
-                val jsonArray = response.getJSONObject("results").getJSONArray("datetime")
+                val jsonArray = response.getJSONObject("results").getJSONArray("datetime").getJSONObject(0).getJSONObject("times")
                 val location=response.getJSONObject("results").getJSONObject("location")
-                val age = jsonArray.getJSONObject(0).getJSONObject("times").getString("Fajr")
-                binding.fajer.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Dhuhr")
-                binding.dhuhr.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Asr")
-                binding.asr.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Maghrib")
-                binding.maghrib.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Isha")
-                binding.isha.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Fajr")
+
+
+
+                binding.fajer.text=jsonArray.getString("Dhuhr")
+                binding.dhuhr.text=jsonArray.getString("Asr")
+                binding.asr.text=jsonArray.getString("Maghrib")
+                binding.maghrib.text=jsonArray.getString("Isha")
+                binding.isha.text=jsonArray.getString("Fajr")
                 binding.country.text=location.getString("country")
                 binding.city.text=location.getString("city")
-                binding.date.text=jsonArray.getJSONObject(0).getJSONObject("date").getString("gregorian")
+                binding.date.text=jsonArray.getString("gregorian")
 
             } catch (e: JSONException) { e.printStackTrace() }
         }, { error ->
@@ -59,6 +69,15 @@ class MainActivity : AppCompatActivity() {
         val requestQueue:RequestQueue = Volley.newRequestQueue(this)
         requestQueue.add(request)
     }
+
+
+
+
+
+
+
+
+
     // search of country
     private fun  searchCountry(){
         binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
