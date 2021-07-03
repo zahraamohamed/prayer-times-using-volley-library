@@ -3,6 +3,8 @@ package com.example.myapplication.data.ui
 import android.os.Bundle
 import android.util.Log
 import android.webkit.*
+import android.widget.SearchView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -28,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         requestQueue = Volley.newRequestQueue(this)
 
         makeRequest("paris")
+        searchCountry()
     }
 
 
@@ -37,20 +40,51 @@ class MainActivity : AppCompatActivity() {
         val request = JsonObjectRequest(Request.Method.GET,
             url, null ,{ response ->
             try {
-                Log.i("respo", "true $response")
                 val jsonArray = response.getJSONObject("results").getJSONArray("datetime")
-                Log.i("respo", "leng = ${jsonArray.length()} json =  ${jsonArray.getJSONObject(0).getJSONObject("times").getString("Fajr")}")
-
+                val location=response.getJSONObject("results").getJSONObject("location")
                 val age = jsonArray.getJSONObject(0).getJSONObject("times").getString("Fajr")
-                binding.country.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Sunrise")
+                binding.fajer.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Dhuhr")
+                binding.dhuhr.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Asr")
+                binding.asr.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Maghrib")
+                binding.maghrib.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Isha")
+                binding.isha.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Fajr")
+                binding.country.text=location.getString("country")
+                binding.city.text=location.getString("city")
+                binding.date.text=jsonArray.getJSONObject(0).getJSONObject("date").getString("gregorian")
 
             } catch (e: JSONException) { e.printStackTrace() }
         }, { error ->
-            Log.i("respo", "false")
+
             error.printStackTrace()})
         val requestQueue:RequestQueue = Volley.newRequestQueue(this)
         requestQueue.add(request)
     }
+    // search of country
+    private fun  searchCountry(){
+        binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                makeRequest(query!!.lowercase(Locale.getDefault()))
+                if(query.isNullOrEmpty() )
+
+                {
+                    Toast.makeText(applicationContext, "country not found", Toast.LENGTH_LONG).show()
+
+                }else {
+                    makeRequest(query.lowercase(Locale.getDefault()))
+                }
+
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+
+                return false
+            }
+
+        })
+    }
+
 
 
     fun <T> T.lazyLog(tag: String = "LAZY_LOG"): T {
