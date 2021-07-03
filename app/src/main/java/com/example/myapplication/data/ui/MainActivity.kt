@@ -1,29 +1,16 @@
 package com.example.myapplication.data.ui
 
-import android.content.ContentValues
-import android.database.Cursor
-import android.database.DatabaseUtils
-import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.util.Log
 import android.webkit.*
-import android.widget.SearchView
-import android.widget.Toast
-import com.android.volley.Request
-import com.android.volley.Response
-
 import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.example.myapplication.data.PrayerResponce
-import com.example.myapplication.data.dataBase.PrayDataBase
-import com.example.myapplication.data.dataBase.TableDetils
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.google.gson.Gson
-import okhttp3.*
 import org.json.JSONException
-import java.io.IOException
 import java.util.*
 
 
@@ -31,7 +18,7 @@ class MainActivity : AppCompatActivity() {
     //make object from TaskDbHelper class
     private var requestQueue: RequestQueue? = null
     private  lateinit var binding:ActivityMainBinding
-    private val client= OkHttpClient()
+    //private val client= OkHttpClient()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= ActivityMainBinding.inflate(layoutInflater)
@@ -47,32 +34,23 @@ class MainActivity : AppCompatActivity() {
     private fun makeRequest(country: String) {
 
         val url = "https://api.pray.zone/v2/times/today.json?city=$country"
-        val request = JsonObjectRequest(Request.Method.GET, url, null, {
-                response ->try {
+        val request = JsonObjectRequest(Request.Method.GET,
+            url, null ,{ response ->
+            try {
+                Log.i("respo", "true $response")
+                val jsonArray = response.getJSONObject("results").getJSONArray("datetime")
+                Log.i("respo", "leng = ${jsonArray.length()} json =  ${jsonArray.getJSONObject(0).getJSONObject("times").getString("Fajr")}")
 
-            val jsonArray = response.getJSONArray("datetime")
-            for (i in 0 until jsonArray.length()) {
-                val employee = jsonArray.getJSONObject(i)
-                val firstName = employee.getString("Sunrise")
-                val age = employee.getInt("Fajr")
-                firstName.lazyLog()
-                binding.country.text=firstName
-            }
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
-        }, { error -> error.printStackTrace() })
-        requestQueue?.add(request)
+                val age = jsonArray.getJSONObject(0).getJSONObject("times").getString("Fajr")
+                binding.country.text=jsonArray.getJSONObject(0).getJSONObject("times").getString("Sunrise")
+
+            } catch (e: JSONException) { e.printStackTrace() }
+        }, { error ->
+            Log.i("respo", "false")
+            error.printStackTrace()})
+        val requestQueue:RequestQueue = Volley.newRequestQueue(this)
+        requestQueue.add(request)
     }
-
-
-
-
-
-
-
-
-
 
 
     fun <T> T.lazyLog(tag: String = "LAZY_LOG"): T {
